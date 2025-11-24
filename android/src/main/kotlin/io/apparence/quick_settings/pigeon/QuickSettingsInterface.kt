@@ -179,6 +179,12 @@ private object QuickSettingsInterfaceCodec : StandardMessageCodec() {
                 }
             }
 
+            129.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    Tile.fromList(it)
+                }
+            }
+
             else -> super.readValueOfType(type, buffer)
         }
     }
@@ -187,6 +193,11 @@ private object QuickSettingsInterfaceCodec : StandardMessageCodec() {
         when (value) {
             is AddTileResult -> {
                 stream.write(128)
+                writeValue(stream, value.toList())
+            }
+
+            is Tile -> {
+                stream.write(129)
                 writeValue(stream, value.toList())
             }
 
@@ -205,6 +216,7 @@ interface QuickSettingsInterface {
 
     fun enableTile()
     fun disableTile()
+    fun updateTile(tile: Tile)
     fun startBackgroundIsolate(
         pluginCallbackHandle: Long,
         onStatusChangedHandle: Long?,
@@ -281,6 +293,29 @@ interface QuickSettingsInterface {
                         var wrapped: List<Any?>
                         try {
                             api.disableTile()
+                            wrapped = listOf<Any?>(null)
+                        } catch (exception: Throwable) {
+                            wrapped = wrapError(exception)
+                        }
+                        reply.reply(wrapped)
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.QuickSettingsInterface.updateTile",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { message, reply ->
+                        val args = message as List<Any?>
+                        val tileArg = args[0] as Tile
+                        var wrapped: List<Any?>
+                        try {
+                            api.updateTile(tileArg)
                             wrapped = listOf<Any?>(null)
                         } catch (exception: Throwable) {
                             wrapped = wrapError(exception)

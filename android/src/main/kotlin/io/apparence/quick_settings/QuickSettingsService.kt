@@ -73,30 +73,34 @@ class QuickSettingsService : TileService() {
 
     override fun onTileAdded() {
         super.onTileAdded()
-        handleTileEvent(
-            TileAdded(
-                dartTile,
-                callback = {
-                    if (it != null) {
-                        updateTile(it)
-                    }
-                },
-            ),
-        )
+        if (!applyCachedTile()) {
+            handleTileEvent(
+                TileAdded(
+                    dartTile,
+                    callback = {
+                        if (it != null) {
+                            updateTile(it)
+                        }
+                    },
+                ),
+            )
+        }
     }
 
     override fun onStartListening() {
         super.onStartListening()
-        handleTileEvent(
-            TileAdded(
-                dartTile,
-                callback = {
-                    if (it != null) {
-                        updateTile(it)
-                    }
-                },
-            ),
-        )
+        if (!applyCachedTile()) {
+            handleTileEvent(
+                TileAdded(
+                    dartTile,
+                    callback = {
+                        if (it != null) {
+                            updateTile(it)
+                        }
+                    },
+                ),
+            )
+        }
     }
 
     override fun onTileRemoved() {
@@ -143,6 +147,16 @@ class QuickSettingsService : TileService() {
 
         // Need to call updateTile for the tile to pick up changes.
         tile.updateTile()
+        QuickSettingsTileStateStore.save(applicationContext, newTile)
+    }
+
+    private fun applyCachedTile(): Boolean {
+        val cachedTile = QuickSettingsTileStateStore.load(applicationContext)
+        if (cachedTile != null) {
+            updateTile(cachedTile)
+            return true
+        }
+        return false
     }
 
     private fun setupFlutter() {

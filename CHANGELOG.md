@@ -1,3 +1,9 @@
+## 1.2.0
+- ✨ Added `QuickSettings.syncTile` to push tile state updates from Flutter code and keep the tile UI aligned with the app.
+- 💾 Tile state is now cached natively and restored after process kills or device restarts; manual sync triggers an immediate refresh via `TileService.requestListeningState`.
+- 🧩 The background Flutter engine now registers `GeneratedPluginRegistrant`, so invoking other Flutter plugins from tile callbacks works reliably.
+- 📚 Updated README with examples of the new sync API.
+
 ## 1.1.0
 - This is a fork of the original plugin [quick_settings](https://pub.dev/packages/quick_settings)
 - Add support of calling functions (from tile) that use some flutter plugins;

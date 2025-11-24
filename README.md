@@ -213,6 +213,42 @@ Before Android 13, this has no effect.
 `QuickSettings.addTileToQuickSettings()` returns an `AddTileResult` with a `success` parameter, but it is not reliable since the Android implementation's callback is not.
 It will be mostly useful to know if your drawable has been correctly parsed by the plugin or not.
 
+## Keeping the tile in sync with your app
+
+You can now force the Quick Settings tile to reflect the latest state of your application even if the user never opens the tile panel.
+Just call `QuickSettings.syncTile` whenever your app changes state:
+
+```dart
+import 'package:quick_settings_with_flutter_plugins/quick_settings.dart';
+
+Future<void> _updateTile(bool isActive) async {
+  await QuickSettings.syncTile(
+    Tile(
+      label: isActive ? 'Active tile' : 'Disabled tile',
+      tileStatus: isConnected ? TileStatus.active : TileStatus.inactive,
+      drawableName: 'some_drawable_icon',
+      subtitle: isConnected ? 'Tap to disable' : 'Tap to make active',
+    ),
+  );
+  // Optionally add a small delay and call syncTile again to ensure UI update
+  await Future.delayed(Duration(milliseconds: 300));
+  if(isActive){
+    await QuickSettings.syncTile(
+        Tile(
+          label: 'Disabled tile (300 ms complited)',
+          tileStatus: TileStatus.active,
+          drawableName: 'some_drawable_icon_2',
+          subtitle: '300ms complited, time to tap to disable',
+        ),
+      );
+  }
+}
+  
+```
+
+Under the hood the plugin stores the provided configuration on the native side and asks Android to refresh the tile immediately (even if your Flutter app is closed).
+The same state is reused whenever the tile starts listening again after a device reboot or process kill.
+
 ## Customizing the default tile in the system UI
 
 Your Tile will appear in the list of Quick Settings tiles with the following default appearance:

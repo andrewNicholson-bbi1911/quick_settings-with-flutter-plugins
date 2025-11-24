@@ -78,6 +78,8 @@ abstract class QuickSettingsInterface {
 
   void disableTile();
 
+  void updateTile(Tile tile);
+
   void startBackgroundIsolate(
     int pluginCallbackHandle,
     int? onStatusChangedHandle,

@@ -89,4 +89,16 @@ class QuickSettings {
       await _instance.disableTile();
     }
   }
+
+  /// Pushes the provided [Tile] configuration to the native service.
+  ///
+  /// Use this to keep the Quick Settings tile in sync with your in-app state even
+  /// when the user has not interacted with the tile yet. The method stores the
+  /// tile configuration on the native side and requests the system to refresh
+  /// the tile immediately.
+  static Future<void> syncTile(Tile tile) async {
+    if (!kIsWeb && Platform.isAndroid) {
+      await _instance.updateTile(tile);
+    }
+  }
 }

@@ -123,6 +123,9 @@ class _QuickSettingsInterfaceCodec extends StandardMessageCodec {
     if (value is AddTileResult) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
+    } else if (value is Tile) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -133,6 +136,8 @@ class _QuickSettingsInterfaceCodec extends StandardMessageCodec {
     switch (type) {
       case 128:
         return AddTileResult.decode(readValue(buffer)!);
+      case 129:
+        return Tile.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -204,6 +209,28 @@ class QuickSettingsInterface {
         'dev.flutter.pigeon.QuickSettingsInterface.disableTile', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList = await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> updateTile(Tile arg_tile) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.QuickSettingsInterface.updateTile', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_tile]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

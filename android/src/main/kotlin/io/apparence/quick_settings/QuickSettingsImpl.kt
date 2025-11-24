@@ -4,11 +4,13 @@ import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.service.quicksettings.TileService
 import android.os.Build
 import android.util.Log
 import androidx.core.graphics.drawable.IconCompat
 import io.apparence.quick_settings.pigeon.AddTileResult
 import io.apparence.quick_settings.pigeon.QuickSettingsInterface
+import io.apparence.quick_settings.pigeon.Tile
 import io.flutter.embedding.engine.FlutterShellArgs
 
 class QuickSettingsImpl : QuickSettingsInterface {
@@ -87,6 +89,15 @@ class QuickSettingsImpl : QuickSettingsInterface {
             activity!!.packageManager.setComponentEnabledSetting(
                 componentName, disableFlag, PackageManager.DONT_KILL_APP
             )
+        }
+    }
+
+    override fun updateTile(tile: Tile) {
+        val ctx = activity?.applicationContext ?: return
+        QuickSettingsTileStateStore.save(ctx, tile)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val componentName = ComponentName(ctx, QuickSettingsService::class.java)
+            TileService.requestListeningState(ctx, componentName)
         }
     }
 
