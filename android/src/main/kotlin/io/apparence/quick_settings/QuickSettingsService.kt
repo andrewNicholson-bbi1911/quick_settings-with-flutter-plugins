@@ -85,6 +85,20 @@ class QuickSettingsService : TileService() {
         )
     }
 
+    override fun onStartListening() {
+        super.onStartListening()
+        handleTileEvent(
+            TileAdded(
+                dartTile,
+                callback = {
+                    if (it != null) {
+                        updateTile(it)
+                    }
+                },
+            ),
+        )
+    }
+
     override fun onTileRemoved() {
         handleTileEvent(TileRemoved())
         super.onTileRemoved()

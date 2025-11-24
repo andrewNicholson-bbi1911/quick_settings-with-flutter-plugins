@@ -96,8 +96,8 @@ class QuickSettingsExecutor(private val context: Context) : QuickSettingsBackgro
             ) {
                 val appBundlePath = loader.findAppBundlePath()
                 val assets: AssetManager = context.assets
-                if (isNotRunning()) {
-                    backgroundFlutterEngine = if (shellArgs != null) {
+                    if (isNotRunning()) {
+                        backgroundFlutterEngine = if (shellArgs != null) {
                         Log.i(
                             TAG,
                             "Creating background FlutterEngine instance, with args: ${shellArgs.toArray()} "
@@ -109,6 +109,7 @@ class QuickSettingsExecutor(private val context: Context) : QuickSettingsBackgro
                         Log.i(TAG, "Creating background FlutterEngine instance.")
                         FlutterEngine(context)
                     }
+                        registerPlugins(backgroundFlutterEngine!!)
                     // We need to create an instance of `FlutterEngine` before looking up the
                     // callback. If we don't, the callback cache won't be initialized and the
                     // lookup will fail.
@@ -277,6 +278,22 @@ class QuickSettingsExecutor(private val context: Context) : QuickSettingsBackgro
                 SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE
             )
             prefs.edit().putLong(key, value).apply()
+        }
+
+        private fun registerPlugins(engine: FlutterEngine) {
+            try {
+                val generatedPluginRegistrant =
+                    Class.forName("io.flutter.plugins.GeneratedPluginRegistrant")
+                val registerWith =
+                    generatedPluginRegistrant.getDeclaredMethod("registerWith", FlutterEngine::class.java)
+                registerWith.invoke(null, engine)
+            } catch (e: ClassNotFoundException) {
+                Log.i(TAG, "GeneratedPluginRegistrant not found.")
+            } catch (e: NoSuchMethodException) {
+                Log.i(TAG, "registerWith not available on GeneratedPluginRegistrant.")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error registering plugins", e)
+            }
         }
     }
 

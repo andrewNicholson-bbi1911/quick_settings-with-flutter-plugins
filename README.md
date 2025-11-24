@@ -1,3 +1,5 @@
+> **Note:** This fork allows using quick settings tile with other specific Flutter plugin functions. Additionally, a namespace has been added for AGP 7 support.
+
 [![Apparence.io](media/apparence_banner.png)](https://www.apparence.io/)
 ![Quick Settings header](media/quick_settings_header.png)
 
