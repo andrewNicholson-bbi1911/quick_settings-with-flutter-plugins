@@ -27,6 +27,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     compileSdkVersion 33
+    namespace = 'io.apparence.quick_settings'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
