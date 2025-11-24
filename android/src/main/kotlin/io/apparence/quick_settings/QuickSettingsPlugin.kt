@@ -13,11 +13,13 @@ class QuickSettingsPlugin : FlutterPlugin, ActivityAware {
 
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        quickSettingsImpl.applicationContext = flutterPluginBinding.applicationContext
         QuickSettingsInterface.setUp(flutterPluginBinding.binaryMessenger, quickSettingsImpl)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         quickSettingsImpl.activity = null
+        quickSettingsImpl.applicationContext = null
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {

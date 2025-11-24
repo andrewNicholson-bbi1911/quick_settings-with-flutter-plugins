@@ -76,6 +76,8 @@ abstract class QuickSettingsInterface {
 
   void enableTile();
 
+  void updateTile(Tile tile);
+
   void disableTile();
 
   void updateTile(Tile tile);

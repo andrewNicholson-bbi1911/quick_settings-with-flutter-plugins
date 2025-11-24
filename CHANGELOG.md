@@ -1,6 +1,10 @@
+## 1.2.1
+- 🛠️ `updateTile`/`syncTile` now work even when no Flutter `Activity` is attached (uses `applicationContext`), so tiles stay in sync while the app is closed.
+- 📦 Small cleanup of duplicate files introduced in 1.2.0.
+
 ## 1.2.0
 - ✨ Added `QuickSettings.syncTile` to push tile state updates from Flutter code and keep the tile UI aligned with the app.
-- 💾 Tile state is now cached natively and restored after process kills or device restarts; manual sync triggers an immediate refresh via `TileService.requestListeningState`.
+- 💾 Tile state is cached on the native side and restored after process kills or device restarts; manual sync triggers an immediate refresh via `TileService.requestListeningState`.
 - 🧩 The background Flutter engine now registers `GeneratedPluginRegistrant`, so invoking other Flutter plugins from tile callbacks works reliably.
 - 📚 Updated README with examples of the new sync API.
 

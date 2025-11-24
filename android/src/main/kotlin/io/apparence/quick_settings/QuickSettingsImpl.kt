@@ -3,9 +3,10 @@ package io.apparence.quick_settings
 import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
-import android.service.quicksettings.TileService
 import android.os.Build
+import android.service.quicksettings.TileService
 import android.util.Log
 import androidx.core.graphics.drawable.IconCompat
 import io.apparence.quick_settings.pigeon.AddTileResult
@@ -15,6 +16,7 @@ import io.flutter.embedding.engine.FlutterShellArgs
 
 class QuickSettingsImpl : QuickSettingsInterface {
     var activity: Activity? = null
+    var applicationContext: Context? = null
 
     override fun addTileToQuickSettings(
         title: String,
@@ -22,17 +24,26 @@ class QuickSettingsImpl : QuickSettingsInterface {
         callback: (Result<AddTileResult>) -> Unit
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val currentActivity = activity
+            if (currentActivity == null) {
+                callback(
+                    Result.failure(
+                        IllegalStateException("Activity not attached, cannot request tile addition.")
+                    )
+                )
+                return
+            }
             val componentName = ComponentName(
-                activity!!, QuickSettingsService::class.java
+                currentActivity, QuickSettingsService::class.java
             )
             // Enable the service if it has not been enabled yet
             val enableFlag: Int = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            activity!!.packageManager.setComponentEnabledSetting(
+            currentActivity.packageManager.setComponentEnabledSetting(
                 componentName, enableFlag, PackageManager.DONT_KILL_APP
             )
 
             val drawableResourceId =
-                QuickSettingsPlugin.drawableResourceIdFromName(activity!!, drawableName)
+                QuickSettingsPlugin.drawableResourceIdFromName(currentActivity, drawableName)
             if (drawableResourceId == 0) {
                 return callback(
                     Result.success(
@@ -67,11 +78,12 @@ class QuickSettingsImpl : QuickSettingsInterface {
      */
     override fun enableTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val ctx = requireContext()
             val componentName = ComponentName(
-                activity!!, QuickSettingsService::class.java
+                ctx, QuickSettingsService::class.java
             )
             val enableFlag: Int = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            activity!!.packageManager.setComponentEnabledSetting(
+            ctx.packageManager.setComponentEnabledSetting(
                 componentName, enableFlag, PackageManager.DONT_KILL_APP
             )
         }
@@ -82,18 +94,19 @@ class QuickSettingsImpl : QuickSettingsInterface {
      */
     override fun disableTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val ctx = requireContext()
             val componentName = ComponentName(
-                activity!!, QuickSettingsService::class.java
+                ctx, QuickSettingsService::class.java
             )
             val disableFlag: Int = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-            activity!!.packageManager.setComponentEnabledSetting(
+            ctx.packageManager.setComponentEnabledSetting(
                 componentName, disableFlag, PackageManager.DONT_KILL_APP
             )
         }
     }
 
     override fun updateTile(tile: Tile) {
-        val ctx = activity?.applicationContext ?: return
+        val ctx = requireContext()
         QuickSettingsTileStateStore.save(ctx, tile)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val componentName = ComponentName(ctx, QuickSettingsService::class.java)
@@ -112,6 +125,7 @@ class QuickSettingsImpl : QuickSettingsInterface {
         onTileRemovedHandle: Long?
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val ctx = requireContext()
             var shellArgs: FlutterShellArgs? = null
             if (activity != null) {
                 // Supports both Flutter Activity types:
@@ -121,32 +135,37 @@ class QuickSettingsImpl : QuickSettingsInterface {
                 shellArgs = FlutterShellArgs.fromIntent(activity!!.intent)
             }
             QuickSettingsService.setCallbackDispatcher(
-                activity!!.applicationContext,
+                ctx,
                 pluginCallbackHandle
             )
 
             onStatusChangedHandle?.apply {
                 QuickSettingsExecutor.setOnStatusChangedHandle(
-                    activity!!.applicationContext,
+                    ctx,
                     this
                 )
             }
             onTileAddedHandle?.apply {
                 QuickSettingsExecutor.setOnTileAddedHandle(
-                    activity!!.applicationContext,
+                    ctx,
                     this
                 )
             }
             onTileRemovedHandle?.apply {
                 QuickSettingsExecutor.setOnTileRemovedHandle(
-                    activity!!.applicationContext,
+                    ctx,
                     this
                 )
             }
             QuickSettingsService.startBackgroundIsolate(
-                activity!!.applicationContext,
+                ctx,
                 pluginCallbackHandle, shellArgs
             )
         }
+    }
+
+    private fun requireContext(): Context {
+        return activity?.applicationContext ?: applicationContext
+        ?: throw IllegalStateException("QuickSettingsPlugin is not attached to a context.")
     }
 }
