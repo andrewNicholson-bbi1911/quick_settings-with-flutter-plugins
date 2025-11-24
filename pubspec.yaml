@@ -1,9 +1,9 @@
 name: quick_settings
 description: Create and handle your own custom Tile in Android Quick Settings
-version: 1.0.1
-homepage: https://github.com/Apparence-io/quick_settings
-repository: https://github.com/Apparence-io/quick_settings
-issue_tracker: https://github.com/Apparence-io/quick_settings/issues
+version: 1.1.0
+homepage: https://github.com/andrewNicholson-bbi1911/quick_settings-with-flutter-plugins
+repository: https://github.com/andrewNicholson-bbi1911/quick_settings-with-flutter-plugins
+issue_tracker: https://github.com/andrewNicholson-bbi1911/quick_settings-with-flutter-plugins/issues
 
 environment:
   sdk: '>=2.18.6 <4.0.0'

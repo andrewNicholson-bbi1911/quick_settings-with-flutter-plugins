@@ -258,3 +258,8 @@ Here is the customized appearance:
 If you are using this plugin and would like something added, please [create an issue](https://github.com/Apparence-io/quick_settings/issues/new).
 
 [![Apparence.io](media/apparence_banner.png)](https://www.apparence.io/)
+
+---
+> **This fork is maintained by [andrewNicholson-bbi1911](https://github.com/andrewNicholson-bbi1911).**
+---
+
