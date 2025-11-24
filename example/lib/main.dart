@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quick_settings/quick_settings.dart';
+import 'package:quick_settings_with_flutter_plugins/quick_settings.dart';
 import 'package:quick_settings_example/alarm_manager.dart';
 
 // ignore_for_file: avoid_print

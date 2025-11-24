@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:quick_settings/src/quick_settings_interface.dart';
+import 'package:quick_settings_with_flutter_plugins/src/quick_settings_interface.dart';
 
 import '../quick_settings.dart';
 

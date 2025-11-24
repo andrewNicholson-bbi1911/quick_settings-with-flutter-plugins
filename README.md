@@ -25,7 +25,7 @@ Native to Dart communication in an Android Service has been heavily inspired by 
 
 Start by adding this plugin to your `pubspec.yaml`:
 ```
-flutter pub add quick_settings
+flutter pub add quick_settings_with_flutter_plugins
 ```
 
 You must set minSdkVersion to 21 or more in your `android/build.gradle`:
@@ -56,7 +56,7 @@ Find more about this issue [here](https://stackoverflow.com/a/75298544/3545278).
 
 ## Usage
 
-A good place to setup `quick_settings` is in your `main()` function:
+A good place to setup `quick_settings_with_flutter_plugins` is in your `main()` function:
 ``` dart
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
