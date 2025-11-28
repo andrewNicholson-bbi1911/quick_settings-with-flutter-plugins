@@ -1,3 +1,6 @@
+## 1.3.0
+- 🐞 Fixed a bug where, after updating the host app, stale background callback handles could break tile callbacks. The plugin now automatically clears its stored state when the app `app_version_name` or `versionCode` changes and lets Dart re‑register fresh callbacks.
+
 ## 1.2.1
 - 🛠️ `updateTile`/`syncTile` now work even when no Flutter `Activity` is attached (uses `applicationContext`), so tiles stay in sync while the app is closed.
 - 📦 Small cleanup of duplicate files introduced in 1.2.0.

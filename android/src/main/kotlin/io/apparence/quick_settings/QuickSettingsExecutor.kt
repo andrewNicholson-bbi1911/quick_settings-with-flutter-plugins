@@ -240,6 +240,8 @@ class QuickSettingsExecutor(private val context: Context) : QuickSettingsBackgro
         private const val ON_TILE_ADDED_HANDLE_KEY = "on_tile_aded_handle"
         private const val ON_TILE_REMOVED_HANDLE_KEY = "on_tile_removed_handle"
         private const val SHARED_PREFERENCES_KEY = "quick_settings"
+        private const val APP_VERSION_KEY = "app_version_code"
+        private const val APP_VERSION_NAME_KEY = "app_version_name"
 
 
         /**
@@ -278,6 +280,99 @@ class QuickSettingsExecutor(private val context: Context) : QuickSettingsBackgro
                 SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE
             )
             prefs.edit().putLong(key, value).apply()
+        }
+
+        /**
+         * Clears all Quick Settings plugin SharedPreferences state.
+         *
+         * This is used on application update to drop stale callback handles
+         * and force re-registration from Dart.
+         */
+        private fun clearPrefs(context: Context) {
+            val prefs = context.getSharedPreferences(
+                SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE
+            )
+            prefs.edit().clear().apply()
+        }
+
+        /**
+         * Returns current app versionCode/longVersionCode as a stable Long.
+         */
+        private fun currentAppVersionCode(context: Context): Long {
+            return try {
+                val pm = context.packageManager
+                val pkgName = context.packageName
+                val pkgInfo = pm.getPackageInfo(pkgName, 0)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    pkgInfo.longVersionCode
+                } else {
+                    @Suppress("DEPRECATION")
+                    pkgInfo.versionCode.toLong()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to read app versionCode: $e")
+                -1L
+            }
+        }
+
+        /**
+         * Returns current app versionName as a String (e.g. "1.0.14").
+         */
+        private fun currentAppVersionName(context: Context): String? {
+            return try {
+                val pm = context.packageManager
+                val pkgName = context.packageName
+                val pkgInfo = pm.getPackageInfo(pkgName, 0)
+                pkgInfo.versionName
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to read app versionName: $e")
+                null
+            }
+        }
+
+        /**
+         * Called on plugin attach to engine to automatically clear all plugin
+         * state when the application version changes (after an update).
+         *
+         * This removes stale callback handles and cached tile state that point
+         * to old Dart entry points or isolates.
+         */
+        fun ensureStateForCurrentAppVersion(context: Context) {
+            val prefs = context.getSharedPreferences(
+                SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE
+            )
+            val storedCode = prefs.getLong(APP_VERSION_KEY, -1L)
+            val storedName = prefs.getString(APP_VERSION_NAME_KEY, null)
+
+            val currentCode = currentAppVersionCode(context)
+            val currentName = currentAppVersionName(context)
+
+            if (currentCode <= 0L && currentName.isNullOrEmpty()) {
+                return
+            }
+
+            val versionCodeChanged = currentCode > 0L && storedCode != currentCode
+            val versionNameChanged =
+                !currentName.isNullOrEmpty() && !currentName.equals(storedName)
+
+            if (versionCodeChanged || versionNameChanged) {
+                // App was updated (or first run) – drop old plugin state.
+                Log.i(
+                    TAG,
+                    "App version changed (code: $storedCode -> $currentCode, name: $storedName -> $currentName), clearing quick_settings state."
+                )
+                clearPrefs(context)
+                // Also clear cached tile state.
+                QuickSettingsTileStateStore.clear(context)
+                // Store the new version info after cleanup.
+                val vPrefs = context.getSharedPreferences(
+                    SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE
+                )
+                vPrefs.edit()
+                    .putLong(APP_VERSION_KEY, currentCode)
+                    .putString(APP_VERSION_NAME_KEY, currentName)
+                    .apply()
+            }
         }
 
         private fun registerPlugins(engine: FlutterEngine) {

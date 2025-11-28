@@ -13,7 +13,11 @@ class QuickSettingsPlugin : FlutterPlugin, ActivityAware {
 
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        quickSettingsImpl.applicationContext = flutterPluginBinding.applicationContext
+        val appContext = flutterPluginBinding.applicationContext
+        // Ensure plugin state is fresh for current app version (after updates).
+        QuickSettingsExecutor.ensureStateForCurrentAppVersion(appContext)
+
+        quickSettingsImpl.applicationContext = appContext
         QuickSettingsInterface.setUp(flutterPluginBinding.binaryMessenger, quickSettingsImpl)
     }
 

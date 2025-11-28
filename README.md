@@ -1,4 +1,4 @@
-> **Note:** This fork allows using quick settings tile with other specific Flutter plugin functions. Additionally, a namespace has been added for AGP 7 support.
+> **Note:** This fork allows using quick settings tile with other specific Flutter plugin functions. Additionally, a namespace has been added for AGP 7 support. Also you can update tile in runtime from any part of your app or plugin.
 
 [![Apparence.io](media/apparence_banner.png)](https://www.apparence.io/)
 ![Quick Settings header](media/quick_settings_header.png)
@@ -235,6 +235,20 @@ Future<void> updateTile(bool isConnected) async {
 
 Under the hood the plugin stores the provided configuration on the native side and asks Android to refresh the tile immediately (even if your Flutter app is closed).
 The same state is reused whenever the tile starts listening again after a device reboot or process kill.
+
+### App updates and stale callbacks
+
+This fork also safeguards against issues that can happen **after updating your app in place** (installing a new APK/AAB over an existing install).
+Internally, the plugin stores callback handles and tile state in `SharedPreferences`. On `onAttachedToEngine` it now compares the current app `versionCode` **and** `versionName` with the last stored ones:
+
+- if both are unchanged, existing callbacks/state are reused;
+- if either `versionCode` or `versionName` has changed, the plugin **clears its stored state** (including cached tile config) so that Dart can re‑register fresh callbacks via `QuickSettings.setup`.
+
+This prevents cases where, after an app update, the tile appears but its background callbacks no longer fire and you have to reinstall the app to fix it.
+
+> **Important:** The auto‑cleanup logic is based on Android `versionCode` **and** `versionName`.  
+> In a typical Flutter app `versionName` is the part **before** `+` (e.g. `1.0.14`), and `versionCode` is the **build number** after `+` (e.g. `58` in `1.0.14+58`).  
+> Bumping **любую** из этих частей (версию или билд‑номер) приведёт к корректному авто‑сбросу состояния плагина после обновления.
 
 ## Customizing the default tile in the system UI
 
