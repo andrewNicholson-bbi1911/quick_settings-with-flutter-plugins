@@ -73,38 +73,20 @@ class QuickSettingsService : TileService() {
 
     override fun onTileAdded() {
         super.onTileAdded()
-        if (!applyCachedTile()) {
-            handleTileEvent(
-                TileAdded(
-                    dartTile,
-                    callback = {
-                        if (it != null) {
-                            updateTile(it)
-                        }
-                    },
-                ),
-            )
-        }
+        applyCachedTile()
+        dispatchTileAddedEvent(force = true)
     }
 
     override fun onStartListening() {
         super.onStartListening()
-        if (!applyCachedTile()) {
-            handleTileEvent(
-                TileAdded(
-                    dartTile,
-                    callback = {
-                        if (it != null) {
-                            updateTile(it)
-                        }
-                    },
-                ),
-            )
-        }
+        applyCachedTile()
+        dispatchTileAddedEvent(force = false)
     }
 
     override fun onTileRemoved() {
+        QuickSettingsTileStateStore.clear(applicationContext)
         handleTileEvent(TileRemoved())
+        QuickSettingsTileStateStore.setTileAddedReported(applicationContext, false)
         super.onTileRemoved()
     }
 
@@ -148,6 +130,23 @@ class QuickSettingsService : TileService() {
         // Need to call updateTile for the tile to pick up changes.
         tile.updateTile()
         QuickSettingsTileStateStore.save(applicationContext, newTile)
+    }
+
+    private fun dispatchTileAddedEvent(force: Boolean) {
+        if (!force && QuickSettingsTileStateStore.wasTileAddedReported(applicationContext)) {
+            return
+        }
+        handleTileEvent(
+            TileAdded(
+                dartTile,
+                callback = {
+                    if (it != null) {
+                        updateTile(it)
+                    }
+                },
+            ),
+        )
+        QuickSettingsTileStateStore.setTileAddedReported(applicationContext, true)
     }
 
     private fun applyCachedTile(): Boolean {

@@ -12,6 +12,7 @@ object QuickSettingsTileStateStore {
     private const val KEY_STATE_DESCRIPTION = "state_description"
     private const val KEY_DRAWABLE = "drawable_name"
     private const val KEY_SUBTITLE = "subtitle"
+    private const val KEY_ADDED_REPORTED = "added_reported"
 
     fun save(context: Context, tile: Tile) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -54,6 +55,16 @@ object QuickSettingsTileStateStore {
     fun clear(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
+    }
+
+    fun wasTileAddedReported(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_ADDED_REPORTED, false)
+    }
+
+    fun setTileAddedReported(context: Context, reported: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_ADDED_REPORTED, reported).apply()
     }
 }
 

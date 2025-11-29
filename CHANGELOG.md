@@ -1,3 +1,6 @@
+## 1.3.1
+- ✅ Fixed the regression where `onTileAdded` fired on every `onStartListening`: the handler now runs once per real tile add, while still ensuring callbacks get dispatched after cache restores. `onTileRemoved` also resets the state so the next add is reported correctly.
+
 ## 1.3.0
 - 🐞 Fixed a bug where, after updating the host app, stale background callback handles could break tile callbacks. The plugin now automatically clears its stored state when the app `app_version_name` or `versionCode` changes and lets Dart re‑register fresh callbacks.
 
